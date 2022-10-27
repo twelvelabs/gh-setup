@@ -1,0 +1,16 @@
+{
+    "go.lintTool": "golangci-lint",
+    "gopls": {
+        "local": "github.com/twelvelabs/gh-setup",
+        "ui.semanticTokens": true
+    },
+    "cSpell.words": [
+        "Cygwin",
+        "interactable",
+        "iostreams",
+        "isatty",
+        "safeexec",
+        "stretchr",
+        "testutil"
+    ]
+}

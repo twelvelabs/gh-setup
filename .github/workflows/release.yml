@@ -1,0 +1,16 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791 # pin@v2
+      - uses: cli/gh-extension-precompile@ea409c0dc27ec3031d1b0d18d17124441d3c3b6b # pin@v1
