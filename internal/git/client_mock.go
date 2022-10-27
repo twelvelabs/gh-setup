@@ -21,6 +21,9 @@ var _ Client = &ClientMock{}
 //			ExecFunc: func(args ...string) (bytes.Buffer, bytes.Buffer, error) {
 //				panic("mock out the Exec method")
 //			},
+//			HasRemoteFunc: func(name string) bool {
+//				panic("mock out the HasRemote method")
+//			},
 //			IsDirtyFunc: func() bool {
 //				panic("mock out the IsDirty method")
 //			},
@@ -43,6 +46,9 @@ type ClientMock struct {
 	// ExecFunc mocks the Exec method.
 	ExecFunc func(args ...string) (bytes.Buffer, bytes.Buffer, error)
 
+	// HasRemoteFunc mocks the HasRemote method.
+	HasRemoteFunc func(name string) bool
+
 	// IsDirtyFunc mocks the IsDirty method.
 	IsDirtyFunc func() bool
 
@@ -62,6 +68,11 @@ type ClientMock struct {
 			// Args is the args argument value.
 			Args []string
 		}
+		// HasRemote holds details about calls to the HasRemote method.
+		HasRemote []struct {
+			// Name is the name argument value.
+			Name string
+		}
 		// IsDirty holds details about calls to the IsDirty method.
 		IsDirty []struct {
 		}
@@ -76,6 +87,7 @@ type ClientMock struct {
 		}
 	}
 	lockExec          sync.RWMutex
+	lockHasRemote     sync.RWMutex
 	lockIsDirty       sync.RWMutex
 	lockIsInitialized sync.RWMutex
 	lockIsInstalled   sync.RWMutex
@@ -111,6 +123,38 @@ func (mock *ClientMock) ExecCalls() []struct {
 	mock.lockExec.RLock()
 	calls = mock.calls.Exec
 	mock.lockExec.RUnlock()
+	return calls
+}
+
+// HasRemote calls HasRemoteFunc.
+func (mock *ClientMock) HasRemote(name string) bool {
+	if mock.HasRemoteFunc == nil {
+		panic("ClientMock.HasRemoteFunc: method is nil but Client.HasRemote was just called")
+	}
+	callInfo := struct {
+		Name string
+	}{
+		Name: name,
+	}
+	mock.lockHasRemote.Lock()
+	mock.calls.HasRemote = append(mock.calls.HasRemote, callInfo)
+	mock.lockHasRemote.Unlock()
+	return mock.HasRemoteFunc(name)
+}
+
+// HasRemoteCalls gets all the calls that were made to HasRemote.
+// Check the length with:
+//
+//	len(mockedClient.HasRemoteCalls())
+func (mock *ClientMock) HasRemoteCalls() []struct {
+	Name string
+} {
+	var calls []struct {
+		Name string
+	}
+	mock.lockHasRemote.RLock()
+	calls = mock.calls.HasRemote
+	mock.lockHasRemote.RUnlock()
 	return calls
 }
 

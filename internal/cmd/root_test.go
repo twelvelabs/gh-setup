@@ -48,6 +48,7 @@ func TestRootAction_Run(t *testing.T) {
 				p := a.Prompter.(*prompt.PrompterMock)
 				p.ConfirmFunc = prompt.NewConfirmFuncSet(
 					prompt.NewConfirmFunc(true, nil),
+					prompt.NewConfirmFunc(false, nil),
 				)
 
 				assert.Equal(t, false, a.GitClient.IsInitialized())
@@ -57,8 +58,9 @@ func TestRootAction_Run(t *testing.T) {
 
 				p := a.Prompter.(*prompt.PrompterMock)
 				cc := p.ConfirmCalls()
-				assert.Equal(t, 1, len(cc))
+				assert.Equal(t, 2, len(cc))
 				assert.Equal(t, "Initialize the repo?", cc[0].Msg)
+				assert.Equal(t, "Create a remote on GitHub?", cc[1].Msg)
 
 				assert.Equal(t, true, a.GitClient.IsInitialized())
 			},
@@ -99,6 +101,7 @@ func TestRootAction_Run(t *testing.T) {
 				p := a.Prompter.(*prompt.PrompterMock)
 				p.ConfirmFunc = prompt.NewConfirmFuncSet(
 					prompt.NewConfirmFunc(true, nil),
+					prompt.NewConfirmFunc(false, nil),
 				)
 				p.InputFunc = prompt.NewInputFunc("custom commit msg", nil)
 
@@ -115,8 +118,9 @@ func TestRootAction_Run(t *testing.T) {
 
 				p := a.Prompter.(*prompt.PrompterMock)
 				cc := p.ConfirmCalls()
-				assert.Equal(t, 1, len(cc))
+				assert.Equal(t, 2, len(cc))
 				assert.Equal(t, "Add and commit?", cc[0].Msg)
+				assert.Equal(t, "Create a remote on GitHub?", cc[1].Msg)
 
 				ic := p.InputCalls()
 				assert.Equal(t, 1, len(ic))

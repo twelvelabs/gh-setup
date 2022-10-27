@@ -9,6 +9,22 @@ import (
 	"github.com/twelvelabs/gh-setup/internal/testutil"
 )
 
+func TestHasRemote(t *testing.T) {
+	testutil.InTempDir(t, func(tmpDir string) {
+		_, _, err := Exec("init")
+		assert.NoError(t, err)
+
+		assert.Equal(t, false, HasRemote("origin"))
+
+		_, _, err = Exec("remote", "add", "origin", "git@github.com:cli/cli.git")
+		assert.NoError(t, err)
+
+		assert.Equal(t, true, HasRemote("origin"))
+		assert.Equal(t, false, HasRemote("unknown"))
+	})
+
+}
+
 func TestExec(t *testing.T) {
 	stdout, stderr, err := Exec("--version")
 	assert.NoError(t, err)
@@ -32,17 +48,8 @@ func TestIsInstalled(t *testing.T) {
 	assert.True(t, IsInstalled())
 }
 
-func TestPath(t *testing.T) {
-	// same deal... just going to assume git is on the path.
-	path, err := path()
-	assert.NoError(t, err)
-	assert.Contains(t, path, "/git")
-}
-
 func TestStatusLinesAndIsDirty(t *testing.T) {
 	testutil.InTempDir(t, func(tmpDir string) {
-		// t.Helper()
-
 		_, _, err := Exec("init")
 		assert.NoError(t, err)
 

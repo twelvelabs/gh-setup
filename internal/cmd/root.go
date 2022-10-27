@@ -106,6 +106,16 @@ func (a *RootAction) Run() error {
 		}
 	}
 
+	if !a.GitClient.HasRemote("origin") {
+		resp, err := a.Prompter.Confirm("Create a remote on GitHub?", true, "")
+		if err != nil {
+			return err
+		}
+		if resp {
+			a.Logger.Info("TODO...\n")
+		}
+	}
+
 	a.Logger.Success("Setup complete.\n")
 
 	// client, err := gh.RESTClient(nil)
@@ -131,7 +141,7 @@ func (a *RootAction) promptToCommit(lines []string) (bool, error) {
 		fmt.Fprintf(a.IO.Err, "%s\n", line)
 	}
 	fmt.Fprintf(a.IO.Err, "\n")
-	return a.Prompter.Confirm("Add and commit?", true, "")
+	return a.Prompter.Confirm("Add and commit?", false, "")
 }
 
 func (a *RootAction) commit() error {

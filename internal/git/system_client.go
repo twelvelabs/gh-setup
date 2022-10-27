@@ -12,9 +12,27 @@ import (
 type systemClient struct {
 }
 
-func (c *systemClient) IsInstalled() bool {
-	_, err := path()
+func (c *systemClient) Exec(args ...string) (bytes.Buffer, bytes.Buffer, error) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	path, err := path()
+	if err != nil {
+		err = fmt.Errorf("could not find git executable in PATH: %w", err)
+		return stdout, stderr, err
+	}
+
+	return run(path, args...)
+}
+
+func (c *systemClient) HasRemote(name string) bool {
+	_, _, err := c.Exec("remote", "get-url", name)
 	return err == nil
+}
+
+func (c *systemClient) IsDirty() bool {
+	lines, _ := c.StatusLines()
+	return len(lines) > 0
 }
 
 func (c *systemClient) IsInitialized() bool {
@@ -22,9 +40,9 @@ func (c *systemClient) IsInitialized() bool {
 	return err == nil
 }
 
-func (c *systemClient) IsDirty() bool {
-	lines, _ := c.StatusLines()
-	return len(lines) > 0
+func (c *systemClient) IsInstalled() bool {
+	_, err := path()
+	return err == nil
 }
 
 func (c *systemClient) StatusLines() ([]string, error) {
@@ -39,19 +57,6 @@ func (c *systemClient) StatusLines() ([]string, error) {
 		}
 	}
 	return lines, nil
-}
-
-func (c *systemClient) Exec(args ...string) (bytes.Buffer, bytes.Buffer, error) {
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-
-	path, err := path()
-	if err != nil {
-		err = fmt.Errorf("could not find git executable in PATH: %w", err)
-		return stdout, stderr, err
-	}
-
-	return run(path, args...)
 }
 
 func path() (string, error) {
