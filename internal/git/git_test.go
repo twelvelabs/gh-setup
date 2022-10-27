@@ -34,7 +34,7 @@ func TestIsInstalled(t *testing.T) {
 
 func TestPath(t *testing.T) {
 	// same deal... just going to assume git is on the path.
-	path, err := Path()
+	path, err := path()
 	assert.NoError(t, err)
 	assert.Contains(t, path, "/git")
 }

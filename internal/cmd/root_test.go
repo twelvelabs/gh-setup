@@ -18,59 +18,105 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestRootAction(t *testing.T) {
+func TestRootAction_Run(t *testing.T) {
 	tests := []struct {
-		desc     string
-		before   func(t *testing.T, a *RootAction)
-		prompter *prompt.PrompterMock
-		after    func(t *testing.T, a *RootAction, p *prompt.PrompterMock)
-		err      string
+		desc       string
+		setup      func(t *testing.T, a *RootAction)
+		assertions func(t *testing.T, a *RootAction)
+		err        string
 	}{
 		{
-			desc: "running in an empty directory only prompts to init",
-			before: func(t *testing.T, a *RootAction) {
+			desc: "returns error if git not found",
+			setup: func(t *testing.T, a *RootAction) {
 				t.Helper()
-				assert.Equal(t, false, git.IsInitialized())
+
+				gc := a.GitClient.(*git.ClientMock)
+				gc.IsInstalledFunc = func() bool {
+					return false
+				}
 			},
-			prompter: &prompt.PrompterMock{
-				ConfirmFunc: prompt.NewConfirmFuncSet(
+			err: "could not find git",
+		},
+
+		{
+			desc: "prompts to run git init if needed",
+			setup: func(t *testing.T, a *RootAction) {
+				t.Helper()
+
+				a.GitClient = git.DefaultClient
+
+				p := a.Prompter.(*prompt.PrompterMock)
+				p.ConfirmFunc = prompt.NewConfirmFuncSet(
 					prompt.NewConfirmFunc(true, nil),
-				),
+				)
+
+				assert.Equal(t, false, a.GitClient.IsInitialized())
 			},
-			after: func(t *testing.T, a *RootAction, p *prompt.PrompterMock) {
+			assertions: func(t *testing.T, a *RootAction) {
 				t.Helper()
-				prompter := a.Prompter.(*prompt.PrompterMock)
-				calls := prompter.ConfirmCalls()
 
-				assert.Equal(t, 1, len(calls))
-				assert.Equal(t, "Initialize the repo?", calls[0].Msg)
+				p := a.Prompter.(*prompt.PrompterMock)
+				cc := p.ConfirmCalls()
+				assert.Equal(t, 1, len(cc))
+				assert.Equal(t, "Initialize the repo?", cc[0].Msg)
 
-				assert.Equal(t, true, git.IsInitialized())
+				assert.Equal(t, true, a.GitClient.IsInitialized())
+			},
+		},
+		{
+			desc: "aborts early if user does not want to run git init",
+			setup: func(t *testing.T, a *RootAction) {
+				t.Helper()
+
+				a.GitClient = git.DefaultClient
+
+				p := a.Prompter.(*prompt.PrompterMock)
+				p.ConfirmFunc = prompt.NewConfirmFuncSet(
+					prompt.NewConfirmFunc(false, nil),
+				)
+
+				assert.Equal(t, false, a.GitClient.IsInitialized())
+			},
+			assertions: func(t *testing.T, a *RootAction) {
+				t.Helper()
+
+				p := a.Prompter.(*prompt.PrompterMock)
+				cc := p.ConfirmCalls()
+				assert.Equal(t, 1, len(cc))
+				assert.Equal(t, "Initialize the repo?", cc[0].Msg)
+
+				assert.Equal(t, false, a.GitClient.IsInitialized())
 			},
 		},
 
 		{
-			desc: "running in a directory with files also prompts to commit",
-			before: func(t *testing.T, a *RootAction) {
-				t.Helper()
-				assert.Equal(t, false, git.IsInitialized())
-				_ = os.WriteFile("foo.txt", []byte("aaa"), 0600)
-				_ = os.WriteFile("bar.txt", []byte("bbb"), 0600)
-			},
-			prompter: &prompt.PrompterMock{
-				ConfirmFunc: prompt.NewConfirmFuncSet(
-					prompt.NewConfirmFunc(true, nil),
-					prompt.NewConfirmFunc(true, nil),
-				),
-				InputFunc: prompt.NewInputFunc("custom commit msg", nil),
-			},
-			after: func(t *testing.T, a *RootAction, p *prompt.PrompterMock) {
+			desc: "prompts to run git commit if the working directory is dirty",
+			setup: func(t *testing.T, a *RootAction) {
 				t.Helper()
 
+				a.GitClient = git.DefaultClient
+
+				p := a.Prompter.(*prompt.PrompterMock)
+				p.ConfirmFunc = prompt.NewConfirmFuncSet(
+					prompt.NewConfirmFunc(true, nil),
+				)
+				p.InputFunc = prompt.NewInputFunc("custom commit msg", nil)
+
+				assert.Equal(t, false, a.GitClient.IsInitialized())
+				// dump two untracked files in there
+				_ = os.WriteFile("foo.txt", []byte("aaa"), 0600)
+				_ = os.WriteFile("bar.txt", []byte("bbb"), 0600)
+				_, _, err := a.GitClient.Exec("init")
+				assert.NoError(t, err)
+				assert.Equal(t, true, a.GitClient.IsDirty())
+			},
+			assertions: func(t *testing.T, a *RootAction) {
+				t.Helper()
+
+				p := a.Prompter.(*prompt.PrompterMock)
 				cc := p.ConfirmCalls()
-				assert.Equal(t, 2, len(cc))
-				assert.Equal(t, "Initialize the repo?", cc[0].Msg)
-				assert.Equal(t, "Add and commit?", cc[1].Msg)
+				assert.Equal(t, 1, len(cc))
+				assert.Equal(t, "Add and commit?", cc[0].Msg)
 
 				ic := p.InputCalls()
 				assert.Equal(t, 1, len(ic))
@@ -80,16 +126,50 @@ func TestRootAction(t *testing.T) {
 				assert.Equal(t, false, git.IsDirty())
 			},
 		},
+		{
+			desc: "aborts early if user does not want to run git commit",
+			setup: func(t *testing.T, a *RootAction) {
+				t.Helper()
+
+				a.GitClient = git.DefaultClient
+
+				p := a.Prompter.(*prompt.PrompterMock)
+				p.ConfirmFunc = prompt.NewConfirmFuncSet(
+					prompt.NewConfirmFunc(false, nil),
+				)
+
+				assert.Equal(t, false, a.GitClient.IsInitialized())
+				// dump two untracked files in there
+				_ = os.WriteFile("foo.txt", []byte("aaa"), 0600)
+				_ = os.WriteFile("bar.txt", []byte("bbb"), 0600)
+				_, _, err := a.GitClient.Exec("init")
+				assert.NoError(t, err)
+				assert.Equal(t, true, a.GitClient.IsDirty())
+			},
+			assertions: func(t *testing.T, a *RootAction) {
+				t.Helper()
+
+				p := a.Prompter.(*prompt.PrompterMock)
+				cc := p.ConfirmCalls()
+				assert.Equal(t, 1, len(cc))
+				assert.Equal(t, "Add and commit?", cc[0].Msg)
+
+				assert.Equal(t, true, git.IsInitialized())
+				assert.Equal(t, true, git.IsDirty())
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			testutil.InTempDir(t, func(tmpDir string) {
 				app := core.NewTestApp()
 				action := NewRootAction(app)
-				action.Prompter = tt.prompter
 
 				// pre-run setup or assertions
-				tt.before(t, action)
+				if tt.setup != nil {
+					tt.setup(t, action)
+				}
+
 				// run the action
 				err := action.Run()
 				// assert error
@@ -98,8 +178,11 @@ func TestRootAction(t *testing.T) {
 				} else {
 					require.ErrorContains(t, err, tt.err)
 				}
+
 				// post-run assertions
-				tt.after(t, action, tt.prompter)
+				if tt.assertions != nil {
+					tt.assertions(t, action)
+				}
 			})
 		})
 	}

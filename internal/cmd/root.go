@@ -13,11 +13,7 @@ import (
 )
 
 func NewRootCmd(app *core.App) *cobra.Command {
-	action := &RootAction{
-		IO:       app.IO,
-		Logger:   app.Logger,
-		Prompter: app.Prompter,
-	}
+	action := NewRootAction(app)
 
 	cmd := &cobra.Command{
 		Use:   "gh-setup",
@@ -46,16 +42,18 @@ func NewRootCmd(app *core.App) *cobra.Command {
 
 func NewRootAction(app *core.App) *RootAction {
 	return &RootAction{
-		IO:       app.IO,
-		Logger:   app.Logger,
-		Prompter: app.Prompter,
+		IO:        app.IO,
+		Logger:    app.Logger,
+		Prompter:  app.Prompter,
+		GitClient: app.GitClient,
 	}
 }
 
 type RootAction struct {
-	IO       *iostreams.IOStreams
-	Logger   *iostreams.IconLogger
-	Prompter prompt.Prompter
+	IO        *iostreams.IOStreams
+	Logger    *iostreams.IconLogger
+	Prompter  prompt.Prompter
+	GitClient git.Client
 
 	NoPrompt bool
 }
@@ -70,11 +68,11 @@ func (a *RootAction) Validate() error {
 	return nil
 }
 func (a *RootAction) Run() error {
-	if !git.IsInstalled() {
+	if !a.GitClient.IsInstalled() {
 		return fmt.Errorf("could not find git executable in PATH")
 	}
 
-	if !git.IsInitialized() {
+	if !a.GitClient.IsInitialized() {
 		resp, err := a.Prompter.Confirm("Initialize the repo?", true, "")
 		if err != nil {
 			return err
@@ -83,13 +81,13 @@ func (a *RootAction) Run() error {
 			a.Logger.Failure("Unable to continue until the working directory is initialized.\n")
 			return nil
 		}
-		_, _, err = git.Exec("init")
+		_, _, err = a.GitClient.Exec("init")
 		if err != nil {
 			return err
 		}
 	}
 
-	lines, err := git.StatusLines()
+	lines, err := a.GitClient.StatusLines()
 	if err != nil {
 		return err
 	}
@@ -135,7 +133,7 @@ func (a *RootAction) promptToCommit(lines []string) (bool, error) {
 }
 
 func (a *RootAction) commit() error {
-	_, _, err := git.Exec("add", ".")
+	_, _, err := a.GitClient.Exec("add", ".")
 	if err != nil {
 		return err
 	}
@@ -152,7 +150,7 @@ func (a *RootAction) commit() error {
 	// Starting a progress indicator for the YubiKey folks as a reminder
 	// that they need to touch to approve.
 	a.IO.StartProgressIndicatorWithLabel("Committing")
-	_, _, err = git.Exec(args...)
+	_, _, err = a.GitClient.Exec(args...)
 	a.IO.StopProgressIndicator()
 	return err
 }
