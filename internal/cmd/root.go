@@ -106,6 +106,8 @@ func (a *RootAction) Run() error {
 		}
 	}
 
+	a.Logger.Success("Setup complete.\n")
+
 	// client, err := gh.RESTClient(nil)
 	// if err != nil {
 	// 	fmt.Fprintln(a.IO.Err, err)
