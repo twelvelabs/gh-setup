@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestRootAction_Run(t *testing.T) { //nolint: maintidx //cspell: disable-line
+func TestRootAction_Run(t *testing.T) {
 	tests := []struct {
 		desc       string
 		setup      func(t *testing.T, a *RootAction)
