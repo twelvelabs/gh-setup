@@ -98,82 +98,6 @@ func TestRootAction_Run(t *testing.T) { //nolint: maintidx //cspell: disable-lin
 		},
 
 		{
-			desc: "prompts to run git commit if the working directory is dirty",
-			setup: func(t *testing.T, a *RootAction) {
-				t.Helper()
-
-				a.GhClient = NewClientMock()
-				a.GitClient = git.DefaultClient
-
-				p := a.Prompter.(*prompt.PrompterMock)
-				p.ConfirmFunc = prompt.NewConfirmFuncSet(
-					prompt.NewConfirmFunc(true, nil),
-					prompt.NewConfirmFunc(false, nil),
-				)
-				p.InputFunc = prompt.NewInputFunc("custom commit msg", nil)
-
-				assert.Equal(t, false, a.GitClient.IsInitialized())
-				// dump two untracked files in there
-				_ = os.WriteFile("foo.txt", []byte("aaa"), 0600)
-				_ = os.WriteFile("bar.txt", []byte("bbb"), 0600)
-				_, _, err := a.GitClient.Exec("init")
-				assert.NoError(t, err)
-				assert.Equal(t, true, a.GitClient.IsDirty())
-			},
-			assertions: func(t *testing.T, a *RootAction) {
-				t.Helper()
-
-				p := a.Prompter.(*prompt.PrompterMock)
-				cc := p.ConfirmCalls()
-				assert.Equal(t, 2, len(cc))
-				assert.Equal(t, "Add and commit?", cc[0].Msg)
-				assert.Equal(t, "Create a new repo on GitHub?", cc[1].Msg)
-
-				ic := p.InputCalls()
-				assert.Equal(t, 1, len(ic))
-				assert.Equal(t, "Commit message", ic[0].Msg)
-
-				assert.Equal(t, true, git.IsInitialized())
-				assert.Equal(t, false, git.IsDirty())
-			},
-			err: "aborted",
-		},
-		{
-			desc: "aborts early if user does not want to run git commit",
-			setup: func(t *testing.T, a *RootAction) {
-				t.Helper()
-
-				a.GhClient = NewClientMock()
-				a.GitClient = git.DefaultClient
-
-				p := a.Prompter.(*prompt.PrompterMock)
-				p.ConfirmFunc = prompt.NewConfirmFuncSet(
-					prompt.NewConfirmFunc(false, nil),
-				)
-
-				assert.Equal(t, false, a.GitClient.IsInitialized())
-				// dump two untracked files in there
-				_ = os.WriteFile("foo.txt", []byte("aaa"), 0600)
-				_ = os.WriteFile("bar.txt", []byte("bbb"), 0600)
-				_, _, err := a.GitClient.Exec("init")
-				assert.NoError(t, err)
-				assert.Equal(t, true, a.GitClient.IsDirty())
-			},
-			assertions: func(t *testing.T, a *RootAction) {
-				t.Helper()
-
-				p := a.Prompter.(*prompt.PrompterMock)
-				cc := p.ConfirmCalls()
-				assert.Equal(t, 1, len(cc))
-				assert.Equal(t, "Add and commit?", cc[0].Msg)
-
-				assert.Equal(t, true, git.IsInitialized())
-				assert.Equal(t, true, git.IsDirty())
-			},
-			err: "aborted",
-		},
-
-		{
 			desc: "creates a new repo",
 			setup: func(t *testing.T, a *RootAction) {
 				t.Helper()
@@ -224,14 +148,14 @@ func TestRootAction_Run(t *testing.T) { //nolint: maintidx //cspell: disable-lin
 				p := a.Prompter.(*prompt.PrompterMock)
 				cc := p.ConfirmCalls()
 				assert.Equal(t, 3, len(cc))
-				assert.Equal(t, "Add and commit?", cc[0].Msg)
-				assert.Equal(t, "Create a new repo on GitHub?", cc[1].Msg)
+				assert.Equal(t, "Create a new repo on GitHub?", cc[0].Msg)
+				assert.Equal(t, "Add and commit?", cc[1].Msg)
 				assert.Equal(t, "Push local commits to the remote?", cc[2].Msg)
 
 				ic := p.InputCalls()
 				assert.Equal(t, 2, len(ic))
-				assert.Equal(t, "Commit message", ic[0].Msg)
-				assert.Equal(t, "GitHub repo name", ic[1].Msg)
+				assert.Equal(t, "GitHub repo name", ic[0].Msg)
+				assert.Equal(t, "Commit message", ic[1].Msg)
 
 				sc := p.SelectCalls()
 				assert.Equal(t, 2, len(sc))
