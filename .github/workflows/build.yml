@@ -23,8 +23,8 @@ jobs:
 
       - name: Setup Git
         run: |
-          git config user.name "Test User"
-          git config user.email "test-user@example.com"
+          git config --global user.name "Test User"
+          git config --global user.email "test-user@example.com"
 
       - name: Test
         run: make test

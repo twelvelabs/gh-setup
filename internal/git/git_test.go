@@ -39,7 +39,6 @@ func TestHasRemote(t *testing.T) {
 		assert.Equal(t, true, HasRemote("origin"))
 		assert.Equal(t, false, HasRemote("unknown"))
 	})
-
 }
 
 func TestExec(t *testing.T) {
