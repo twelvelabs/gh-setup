@@ -21,6 +21,11 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Setup Git
+        run: |
+          git config user.name "Test User"
+          git config user.email "test-user@example.com"
+
       - name: Test
         run: make test
 
@@ -42,4 +47,4 @@ jobs:
         uses: golangci/golangci-lint-action@07db5389c99593f11ad7b44463c2d4233066a9b1 # pin@v3
         with:
           version: v1.49
-          only-new-issue: true
+          only-new-issues: true
