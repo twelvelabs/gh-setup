@@ -28,6 +28,9 @@ func NewConfirmFunc(result bool, err error) ConfirmFunc {
 func NewConfirmFuncSet(funcs ...ConfirmFunc) ConfirmFunc {
 	var f ConfirmFunc
 	return func(msg string, value bool, help string) (bool, error) {
+		if len(funcs) == 0 {
+			panic("ConfirmFunc set called out of bounds!")
+		}
 		f, funcs = funcs[0], funcs[1:]
 		return f(msg, value, help)
 	}
@@ -44,6 +47,18 @@ func NewNoopConfirmFunc() ConfirmFunc {
 func NewInputFunc(result string, err error) InputFunc {
 	return func(msg string, value string, help string) (string, error) {
 		return result, err
+	}
+}
+
+// Creates a new InputFunc that delegates to funcs in series.
+func NewInputFuncSet(funcs ...InputFunc) InputFunc {
+	var f InputFunc
+	return func(msg string, value string, help string) (string, error) {
+		if len(funcs) == 0 {
+			panic("InputFunc set called out of bounds!")
+		}
+		f, funcs = funcs[0], funcs[1:]
+		return f(msg, value, help)
 	}
 }
 
@@ -72,6 +87,18 @@ func NewNoopMultiSelectFunc() MultiSelectFunc {
 func NewSelectFunc(result string, err error) SelectFunc {
 	return func(msg string, options []string, value string, help string) (string, error) {
 		return result, err
+	}
+}
+
+// Creates a new SelectFunc that delegates to funcs in series.
+func NewSelectFuncSet(funcs ...SelectFunc) SelectFunc {
+	var f SelectFunc
+	return func(msg string, options []string, value string, help string) (string, error) {
+		if len(funcs) == 0 {
+			panic("SelectFunc set called out of bounds!")
+		}
+		f, funcs = funcs[0], funcs[1:]
+		return f(msg, options, value, help)
 	}
 }
 

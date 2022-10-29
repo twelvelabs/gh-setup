@@ -24,10 +24,13 @@ test: ## Test the extension
 	@cat coverage.tmp | grep -v "_mock.go" | grep -v "_enum.go" > coverage.tmp.new
 	@mv coverage.tmp.new coverage.tmp
 
+.PHONY: generate
+generate:
+	go generate ./...
+
 .PHONY: build
 build: ## Build the extension
 	go mod tidy
-	go generate ./...
 	go build
 
 .PHONY: install

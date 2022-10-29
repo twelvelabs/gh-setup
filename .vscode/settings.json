@@ -8,8 +8,12 @@
         "Cygwin",
         "interactable",
         "iostreams",
+        "ireturn",
         "isatty",
+        "nilnil",
+        "nolint",
         "safeexec",
+        "SSHURL",
         "stretchr",
         "testutil"
     ]

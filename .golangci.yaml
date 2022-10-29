@@ -17,6 +17,7 @@ linters:
     - gomnd
     - nlreturn
     - paralleltest
+    - tagliatelle
     - testpackage
     - varnamelen
     - wrapcheck

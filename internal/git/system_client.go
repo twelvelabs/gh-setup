@@ -25,6 +25,11 @@ func (c *systemClient) Exec(args ...string) (bytes.Buffer, bytes.Buffer, error) 
 	return run(path, args...)
 }
 
+func (c *systemClient) HasCommits() bool {
+	_, _, err := c.Exec("rev-parse", "HEAD")
+	return err == nil
+}
+
 func (c *systemClient) HasRemote(name string) bool {
 	_, _, err := c.Exec("remote", "get-url", name)
 	return err == nil

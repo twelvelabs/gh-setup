@@ -9,6 +9,23 @@ import (
 	"github.com/twelvelabs/gh-setup/internal/testutil"
 )
 
+func TestHasCommits(t *testing.T) {
+	testutil.InTempDir(t, func(tmpDir string) {
+		_, _, err := Exec("init")
+		assert.NoError(t, err)
+		assert.Equal(t, false, HasCommits())
+
+		err = os.WriteFile("foo.txt", []byte("aaa"), 0600)
+		assert.NoError(t, err)
+		_, _, err = Exec("add", "foo.txt")
+		assert.NoError(t, err)
+		_, _, err = Exec("commit", "--no-gpg-sign", "--no-verify", "-m", "add foo")
+		assert.NoError(t, err)
+
+		assert.Equal(t, true, HasCommits())
+	})
+}
+
 func TestHasRemote(t *testing.T) {
 	testutil.InTempDir(t, func(tmpDir string) {
 		_, _, err := Exec("init")

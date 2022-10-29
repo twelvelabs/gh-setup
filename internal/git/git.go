@@ -10,6 +10,8 @@ import (
 type Client interface {
 	// Exec executes git with args.
 	Exec(args ...string) (bytes.Buffer, bytes.Buffer, error)
+	// HasCommits returns true if there are commits in the working dir.
+	HasCommits() bool
 	// HasRemote returns true if name has been configured as a remote.
 	HasRemote(name string) bool
 	// IsDirty returns true if there are uncommitted files.
@@ -26,6 +28,11 @@ var (
 	// DefaultClient is the default Git client.
 	DefaultClient Client = &systemClient{}
 )
+
+// HasCommits returns true if there are commits in the working dir.
+func HasCommits() bool {
+	return DefaultClient.HasCommits()
+}
 
 // HasRemote returns true if name has been configured as a remote.
 func HasRemote(name string) bool {

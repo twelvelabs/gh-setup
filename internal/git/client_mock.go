@@ -21,6 +21,9 @@ var _ Client = &ClientMock{}
 //			ExecFunc: func(args ...string) (bytes.Buffer, bytes.Buffer, error) {
 //				panic("mock out the Exec method")
 //			},
+//			HasCommitsFunc: func() bool {
+//				panic("mock out the HasCommits method")
+//			},
 //			HasRemoteFunc: func(name string) bool {
 //				panic("mock out the HasRemote method")
 //			},
@@ -46,6 +49,9 @@ type ClientMock struct {
 	// ExecFunc mocks the Exec method.
 	ExecFunc func(args ...string) (bytes.Buffer, bytes.Buffer, error)
 
+	// HasCommitsFunc mocks the HasCommits method.
+	HasCommitsFunc func() bool
+
 	// HasRemoteFunc mocks the HasRemote method.
 	HasRemoteFunc func(name string) bool
 
@@ -68,6 +74,9 @@ type ClientMock struct {
 			// Args is the args argument value.
 			Args []string
 		}
+		// HasCommits holds details about calls to the HasCommits method.
+		HasCommits []struct {
+		}
 		// HasRemote holds details about calls to the HasRemote method.
 		HasRemote []struct {
 			// Name is the name argument value.
@@ -87,6 +96,7 @@ type ClientMock struct {
 		}
 	}
 	lockExec          sync.RWMutex
+	lockHasCommits    sync.RWMutex
 	lockHasRemote     sync.RWMutex
 	lockIsDirty       sync.RWMutex
 	lockIsInitialized sync.RWMutex
@@ -123,6 +133,33 @@ func (mock *ClientMock) ExecCalls() []struct {
 	mock.lockExec.RLock()
 	calls = mock.calls.Exec
 	mock.lockExec.RUnlock()
+	return calls
+}
+
+// HasCommits calls HasCommitsFunc.
+func (mock *ClientMock) HasCommits() bool {
+	if mock.HasCommitsFunc == nil {
+		panic("ClientMock.HasCommitsFunc: method is nil but Client.HasCommits was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockHasCommits.Lock()
+	mock.calls.HasCommits = append(mock.calls.HasCommits, callInfo)
+	mock.lockHasCommits.Unlock()
+	return mock.HasCommitsFunc()
+}
+
+// HasCommitsCalls gets all the calls that were made to HasCommits.
+// Check the length with:
+//
+//	len(mockedClient.HasCommitsCalls())
+func (mock *ClientMock) HasCommitsCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockHasCommits.RLock()
+	calls = mock.calls.HasCommits
+	mock.lockHasCommits.RUnlock()
 	return calls
 }
 
