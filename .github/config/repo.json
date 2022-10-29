@@ -6,6 +6,7 @@
     "allow_update_branch": true,
     "default_branch": "main",
     "delete_branch_on_merge": true,
+    "description": "A GitHub CLI extension to setup new repositories",
     "squash_merge_commit_message": "BLANK",
     "squash_merge_commit_title": "PR_TITLE",
     "web_commit_signoff_required": false
