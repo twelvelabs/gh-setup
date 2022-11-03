@@ -3,17 +3,17 @@ package core
 import (
 	"fmt"
 
+	"github.com/twelvelabs/termite/ioutil"
 	"github.com/twelvelabs/termite/ui"
 	uimock "github.com/twelvelabs/termite/ui/mock"
 
 	"github.com/twelvelabs/gh-setup/internal/gh"
 	"github.com/twelvelabs/gh-setup/internal/git"
-	"github.com/twelvelabs/gh-setup/internal/iostreams"
 )
 
 type App struct {
-	IO           *iostreams.IOStreams
-	Logger       *iostreams.IconLogger
+	IO           *ioutil.IOStreams
+	Messenger    *ui.Messenger
 	Prompter     ui.Prompter
 	GhClient     gh.Client
 	GhRestClient gh.RESTClient
@@ -21,8 +21,8 @@ type App struct {
 }
 
 func NewApp() (*App, error) {
-	ios := iostreams.System()
-	logger := iostreams.NewIconLogger(ios)
+	ios := ioutil.System()
+	messenger := ui.NewMessenger(ios)
 	prompter := ui.NewSurveyPrompter(ios.In, ios.Out, ios.Err, ios)
 	gitClient := git.DefaultClient
 
@@ -34,7 +34,7 @@ func NewApp() (*App, error) {
 
 	app := &App{
 		IO:           ios,
-		Logger:       logger,
+		Messenger:    messenger,
 		Prompter:     prompter,
 		GhClient:     ghClient,
 		GhRestClient: ghRestClient,
@@ -44,8 +44,8 @@ func NewApp() (*App, error) {
 }
 
 func NewTestApp() *App {
-	ios := iostreams.Test()
-	logger := iostreams.NewIconLogger(ios)
+	ios := ioutil.Test()
+	messenger := ui.NewMessenger(ios)
 	prompter := uimock.NewPrompterMock()
 	ghClient := &gh.ClientMock{}
 	ghRestClient := &gh.RESTClientMock{}
@@ -53,7 +53,7 @@ func NewTestApp() *App {
 
 	return &App{
 		IO:           ios,
-		Logger:       logger,
+		Messenger:    messenger,
 		Prompter:     prompter,
 		GhClient:     ghClient,
 		GhRestClient: ghRestClient,
