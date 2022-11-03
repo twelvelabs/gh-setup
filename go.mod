@@ -3,7 +3,6 @@ module github.com/twelvelabs/gh-setup
 go 1.19
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/briandowns/spinner v1.19.0
 	github.com/cli/go-gh v0.1.2
 	github.com/cli/safeexec v1.0.0
@@ -12,10 +11,11 @@ require (
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
-	github.com/twelvelabs/termite v0.1.1
+	github.com/twelvelabs/termite v0.1.2
 )
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.3.6 // indirect
 	github.com/cli/shurcooL-graphql v0.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.7.0 // indirect

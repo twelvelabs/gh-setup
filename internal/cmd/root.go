@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/twelvelabs/termite/ui"
 
 	"github.com/twelvelabs/gh-setup/internal/core"
 	"github.com/twelvelabs/gh-setup/internal/gh"
 	"github.com/twelvelabs/gh-setup/internal/git"
 	"github.com/twelvelabs/gh-setup/internal/iostreams"
-	"github.com/twelvelabs/gh-setup/internal/prompt"
 )
 
 const (
@@ -65,7 +65,7 @@ func NewRootAction(app *core.App) *RootAction {
 type RootAction struct {
 	IO        *iostreams.IOStreams
 	Logger    *iostreams.IconLogger
-	Prompter  prompt.Prompter
+	Prompter  ui.Prompter
 	GhClient  gh.Client
 	GitClient git.Client
 

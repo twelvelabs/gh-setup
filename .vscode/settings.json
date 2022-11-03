@@ -15,6 +15,7 @@
         "safeexec",
         "SSHURL",
         "stretchr",
-        "testutil"
+        "testutil",
+        "uimock"
     ]
 }
