@@ -5,8 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/twelvelabs/gh-setup/internal/testutil"
+	"github.com/twelvelabs/termite/testutil"
 )
 
 func TestHasCommits(t *testing.T) {

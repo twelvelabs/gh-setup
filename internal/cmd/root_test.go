@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/twelvelabs/termite/testutil"
 
 	"github.com/twelvelabs/gh-setup/internal/core"
 	"github.com/twelvelabs/gh-setup/internal/gh"
 	"github.com/twelvelabs/gh-setup/internal/git"
 	"github.com/twelvelabs/gh-setup/internal/prompt"
-	"github.com/twelvelabs/gh-setup/internal/testutil"
 )
 
 func TestMain(m *testing.M) {
