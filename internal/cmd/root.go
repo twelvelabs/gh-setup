@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/twelvelabs/termite/ioutil"
+	"github.com/twelvelabs/termite/ui"
 
 	"github.com/twelvelabs/gh-setup/internal/core"
 	"github.com/twelvelabs/gh-setup/internal/gh"
 	"github.com/twelvelabs/gh-setup/internal/git"
-	"github.com/twelvelabs/gh-setup/internal/iostreams"
-	"github.com/twelvelabs/gh-setup/internal/prompt"
 )
 
 const (
@@ -55,7 +55,7 @@ func NewRootCmd(app *core.App) *cobra.Command {
 func NewRootAction(app *core.App) *RootAction {
 	return &RootAction{
 		IO:        app.IO,
-		Logger:    app.Logger,
+		Messenger: app.Messenger,
 		Prompter:  app.Prompter,
 		GhClient:  app.GhClient,
 		GitClient: app.GitClient,
@@ -63,9 +63,9 @@ func NewRootAction(app *core.App) *RootAction {
 }
 
 type RootAction struct {
-	IO        *iostreams.IOStreams
-	Logger    *iostreams.IconLogger
-	Prompter  prompt.Prompter
+	IO        *ioutil.IOStreams
+	Messenger *ui.Messenger
+	Prompter  ui.Prompter
 	GhClient  gh.Client
 	GitClient git.Client
 
@@ -104,7 +104,7 @@ func (a *RootAction) Run() error {
 		return err
 	}
 
-	a.Logger.Success("Setup complete.\n")
+	a.Messenger.Success("Setup complete.\n")
 	return nil
 }
 
@@ -124,7 +124,7 @@ func (a *RootAction) ensureWorkingDirInit() error {
 		return err
 	}
 	if !ok {
-		a.Logger.Failure("Unable to continue until the working directory is initialized.\n")
+		a.Messenger.Failure("Unable to continue until the working directory is initialized.\n")
 		return ErrAborted
 	}
 	_, _, err = a.GitClient.Exec("init")
@@ -148,7 +148,7 @@ func (a *RootAction) ensureWorkingDirClean() error {
 		return err
 	}
 	if !ok {
-		a.Logger.Failure("Unable to continue until the working directory is clean.\n")
+		a.Messenger.Failure("Unable to continue until the working directory is clean.\n")
 		return ErrAborted
 	}
 	err = a.commit()
@@ -183,7 +183,7 @@ func (a *RootAction) ensureRemote(remote string) error {
 	}
 	if repo != nil {
 		// 2a. Prompt to select existing repo
-		a.Logger.Info("A repo named '%s' already exists on GitHub.\n", repoName)
+		a.Messenger.Info("A repo named '%s' already exists on GitHub.\n", repoName)
 		ok, err := a.Prompter.Confirm("Add it as a remote?", true, "")
 		if err != nil {
 			return err
@@ -203,7 +203,7 @@ func (a *RootAction) ensureRemote(remote string) error {
 		return err
 	}
 	if !ok {
-		a.Logger.Failure("Unable to continue until a remote has been configured.\n")
+		a.Messenger.Failure("Unable to continue until a remote has been configured.\n")
 		return ErrAborted
 	}
 
@@ -236,7 +236,7 @@ func (a *RootAction) ensureRemote(remote string) error {
 	if err != nil {
 		return err
 	}
-	a.Logger.Success("Repo created: %s\n", repo.URL)
+	a.Messenger.Success("Repo created: %s\n", repo.URL)
 
 	if err := a.setRemote(remote, repo, user); err != nil {
 		return err
@@ -294,7 +294,7 @@ func (a *RootAction) setRemote(remote string, repo *gh.Repository, user *gh.User
 		}
 	}
 	a.IO.StopProgressIndicator()
-	a.Logger.Success("Remote added: %s %s\n", remote, url)
+	a.Messenger.Success("Remote added: %s %s\n", remote, url)
 	return nil
 }
 
@@ -320,7 +320,7 @@ func (a *RootAction) setRemoteHead(remote string) error {
 }
 
 func (a *RootAction) promptToCommit(lines []string) (bool, error) {
-	a.Logger.Info("There are uncommitted files in the working directory:\n")
+	a.Messenger.Info("There are uncommitted files in the working directory:\n")
 	fmt.Fprintf(a.IO.Err, "\n")
 	for _, line := range lines {
 		fmt.Fprintf(a.IO.Err, "%s\n", line)

@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/twelvelabs/termite/testutil"
+	uimock "github.com/twelvelabs/termite/ui/mock"
 
 	"github.com/twelvelabs/gh-setup/internal/core"
 	"github.com/twelvelabs/gh-setup/internal/gh"
 	"github.com/twelvelabs/gh-setup/internal/git"
-	"github.com/twelvelabs/gh-setup/internal/prompt"
-	"github.com/twelvelabs/gh-setup/internal/testutil"
 )
 
 func TestMain(m *testing.M) {
@@ -48,23 +48,25 @@ func TestRootAction_Run(t *testing.T) {
 				a.GhClient = NewClientMock()
 				a.GitClient = git.DefaultClient
 
-				p := a.Prompter.(*prompt.PrompterMock)
-				p.ConfirmFunc = prompt.NewConfirmFuncSet(
-					prompt.NewConfirmFunc(true, nil),
-					prompt.NewConfirmFunc(false, nil),
-				)
+				p := a.Prompter.(*uimock.PrompterMock)
+				p.ConfirmFunc = func(msg string, value bool, help string) (bool, error) {
+					switch msg {
+					case "Initialize the repo?":
+						return true, nil
+					case "Create a new repo on GitHub?":
+						return false, nil
+					default:
+						panic(fmt.Errorf("unexpected confirm call: %s", msg))
+					}
+				}
 
 				assert.Equal(t, false, a.GitClient.IsInitialized())
 			},
 			assertions: func(t *testing.T, a *RootAction) {
 				t.Helper()
 
-				p := a.Prompter.(*prompt.PrompterMock)
-				cc := p.ConfirmCalls()
-				assert.Equal(t, 2, len(cc))
-				assert.Equal(t, "Initialize the repo?", cc[0].Msg)
-				assert.Equal(t, "Create a new repo on GitHub?", cc[1].Msg)
-
+				p := a.Prompter.(*uimock.PrompterMock)
+				assert.Equal(t, 2, len(p.ConfirmCalls()))
 				assert.Equal(t, true, a.GitClient.IsInitialized())
 			},
 			err: "aborted",
@@ -77,21 +79,23 @@ func TestRootAction_Run(t *testing.T) {
 				a.GhClient = NewClientMock()
 				a.GitClient = git.DefaultClient
 
-				p := a.Prompter.(*prompt.PrompterMock)
-				p.ConfirmFunc = prompt.NewConfirmFuncSet(
-					prompt.NewConfirmFunc(false, nil),
-				)
+				p := a.Prompter.(*uimock.PrompterMock)
+				p.ConfirmFunc = func(msg string, value bool, help string) (bool, error) {
+					switch msg {
+					case "Initialize the repo?":
+						return false, nil
+					default:
+						panic(fmt.Errorf("unexpected confirm call: %s", msg))
+					}
+				}
 
 				assert.Equal(t, false, a.GitClient.IsInitialized())
 			},
 			assertions: func(t *testing.T, a *RootAction) {
 				t.Helper()
 
-				p := a.Prompter.(*prompt.PrompterMock)
-				cc := p.ConfirmCalls()
-				assert.Equal(t, 1, len(cc))
-				assert.Equal(t, "Initialize the repo?", cc[0].Msg)
-
+				p := a.Prompter.(*uimock.PrompterMock)
+				assert.Equal(t, 1, len(p.ConfirmCalls()))
 				assert.Equal(t, false, a.GitClient.IsInitialized())
 			},
 			err: "aborted",
@@ -117,20 +121,41 @@ func TestRootAction_Run(t *testing.T) {
 					return repo, nil
 				}
 
-				p := a.Prompter.(*prompt.PrompterMock)
-				p.ConfirmFunc = prompt.NewConfirmFuncSet(
-					prompt.NewConfirmFunc(true, nil),
-					prompt.NewConfirmFunc(true, nil),
-					prompt.NewConfirmFunc(false, nil),
-				)
-				p.InputFunc = prompt.NewInputFuncSet(
-					prompt.NewNoopInputFunc(),
-					prompt.NewNoopInputFunc(),
-				)
-				p.SelectFunc = prompt.NewSelectFuncSet(
-					prompt.NewNoopSelectFunc(),
-					prompt.NewNoopSelectFunc(),
-				)
+				p := a.Prompter.(*uimock.PrompterMock)
+				p.ConfirmFunc = func(msg string, value bool, help string) (bool, error) {
+					switch msg {
+					case "Create a new repo on GitHub?":
+						return true, nil
+					case "Add and commit?":
+						return true, nil
+					case "Push local commits to the remote?":
+						return false, nil
+					default:
+						panic(fmt.Errorf("unexpected confirm call: %s", msg))
+					}
+				}
+
+				p.InputFunc = func(msg, value, help string) (string, error) {
+					switch msg {
+					case "GitHub repo name":
+						return value, nil
+					case "Commit message":
+						return value, nil
+					default:
+						panic(fmt.Errorf("unexpected input call: %s", msg))
+					}
+				}
+
+				p.SelectFunc = func(msg string, options []string, value, help string) (string, error) {
+					switch msg {
+					case "GitHub repo owner":
+						return value, nil
+					case "GitHub repo visibility":
+						return value, nil
+					default:
+						panic(fmt.Errorf("unexpected select call: %s", msg))
+					}
+				}
 
 				assert.Equal(t, false, a.GitClient.IsInitialized())
 				// dump two untracked files in there
@@ -145,22 +170,10 @@ func TestRootAction_Run(t *testing.T) {
 			assertions: func(t *testing.T, a *RootAction) {
 				t.Helper()
 
-				p := a.Prompter.(*prompt.PrompterMock)
-				cc := p.ConfirmCalls()
-				assert.Equal(t, 3, len(cc))
-				assert.Equal(t, "Create a new repo on GitHub?", cc[0].Msg)
-				assert.Equal(t, "Add and commit?", cc[1].Msg)
-				assert.Equal(t, "Push local commits to the remote?", cc[2].Msg)
-
-				ic := p.InputCalls()
-				assert.Equal(t, 2, len(ic))
-				assert.Equal(t, "GitHub repo name", ic[0].Msg)
-				assert.Equal(t, "Commit message", ic[1].Msg)
-
-				sc := p.SelectCalls()
-				assert.Equal(t, 2, len(sc))
-				assert.Equal(t, "GitHub repo owner", sc[0].Msg)
-				assert.Equal(t, "GitHub repo visibility", sc[1].Msg)
+				p := a.Prompter.(*uimock.PrompterMock)
+				assert.Equal(t, 3, len(p.ConfirmCalls()))
+				assert.Equal(t, 2, len(p.InputCalls()))
+				assert.Equal(t, 2, len(p.SelectCalls()))
 
 				assert.Equal(t, true, git.IsInitialized())
 				assert.Equal(t, true, git.HasRemote("origin"))

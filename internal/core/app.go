@@ -3,25 +3,27 @@ package core
 import (
 	"fmt"
 
+	"github.com/twelvelabs/termite/ioutil"
+	"github.com/twelvelabs/termite/ui"
+	uimock "github.com/twelvelabs/termite/ui/mock"
+
 	"github.com/twelvelabs/gh-setup/internal/gh"
 	"github.com/twelvelabs/gh-setup/internal/git"
-	"github.com/twelvelabs/gh-setup/internal/iostreams"
-	"github.com/twelvelabs/gh-setup/internal/prompt"
 )
 
 type App struct {
-	IO           *iostreams.IOStreams
-	Logger       *iostreams.IconLogger
-	Prompter     prompt.Prompter
+	IO           *ioutil.IOStreams
+	Messenger    *ui.Messenger
+	Prompter     ui.Prompter
 	GhClient     gh.Client
 	GhRestClient gh.RESTClient
 	GitClient    git.Client
 }
 
 func NewApp() (*App, error) {
-	ios := iostreams.System()
-	logger := iostreams.NewIconLogger(ios)
-	prompter := prompt.NewSurveyPrompter(ios.In, ios.Out, ios.Err, ios)
+	ios := ioutil.System()
+	messenger := ui.NewMessenger(ios)
+	prompter := ui.NewSurveyPrompter(ios.In, ios.Out, ios.Err, ios)
 	gitClient := git.DefaultClient
 
 	ghRestClient, err := gh.NewRESTClient()
@@ -32,7 +34,7 @@ func NewApp() (*App, error) {
 
 	app := &App{
 		IO:           ios,
-		Logger:       logger,
+		Messenger:    messenger,
 		Prompter:     prompter,
 		GhClient:     ghClient,
 		GhRestClient: ghRestClient,
@@ -42,16 +44,16 @@ func NewApp() (*App, error) {
 }
 
 func NewTestApp() *App {
-	ios := iostreams.Test()
-	logger := iostreams.NewIconLogger(ios)
-	prompter := &prompt.PrompterMock{}
+	ios := ioutil.Test()
+	messenger := ui.NewMessenger(ios)
+	prompter := uimock.NewPrompterMock()
 	ghClient := &gh.ClientMock{}
 	ghRestClient := &gh.RESTClientMock{}
 	gitClient := &git.ClientMock{}
 
 	return &App{
 		IO:           ios,
-		Logger:       logger,
+		Messenger:    messenger,
 		Prompter:     prompter,
 		GhClient:     ghClient,
 		GhRestClient: ghRestClient,
