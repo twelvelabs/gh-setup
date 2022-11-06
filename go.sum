@@ -71,8 +71,8 @@ github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKs
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/thlib/go-timezone-local v0.0.0-20210907160436-ef149e42d28e h1:BuzhfgfWQbX0dWzYzT1zsORLnHRv3bcRcsaUk0VmXA8=
 github.com/thlib/go-timezone-local v0.0.0-20210907160436-ef149e42d28e/go.mod h1:/Tnicc6m/lsJE0irFMA0LfIwTBo4QP7A8IfyIv4zZKI=
-github.com/twelvelabs/termite v0.1.2 h1:fT0YdjKs5ajLjYrvQYsBFQT64M5wut+O3mexd3CpY/g=
-github.com/twelvelabs/termite v0.1.2/go.mod h1:C4vrJRab81u6spC9krDAP9fa0WcK0ZREAHiA9JhCaPc=
+github.com/twelvelabs/termite v0.2.0 h1:e0zcMLwdrfk7FbosoCUD1zL3O2odzVMzfPI0iR+YTwE=
+github.com/twelvelabs/termite v0.2.0/go.mod h1:3f7KB6y/QsYlb/ngnZ4r/Lcs+HGOTe5UjixmvCVqdGI=
 golang.org/x/net v0.0.0-20220923203811-8be639271d50 h1:vKyz8L3zkd+xrMeIaBsQ/MNVPVFSffdaU3ZyYlBGFnI=
 golang.org/x/net v0.0.0-20220923203811-8be639271d50/go.mod h1:YDH+HFinaLZZlnHAfSS6ZXJJ9M9t4Dl22yv3iI2vPwk=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twelvelabs/termite/testutil"
-	uimock "github.com/twelvelabs/termite/ui/mock"
+	"github.com/twelvelabs/termite/ui"
 
 	"github.com/twelvelabs/gh-setup/internal/core"
 	"github.com/twelvelabs/gh-setup/internal/gh"
@@ -48,7 +48,7 @@ func TestRootAction_Run(t *testing.T) {
 				a.GhClient = NewClientMock()
 				a.GitClient = git.DefaultClient
 
-				p := a.Prompter.(*uimock.PrompterMock)
+				p := a.Prompter.(*ui.PrompterMock)
 				p.ConfirmFunc = func(msg string, value bool, help string) (bool, error) {
 					switch msg {
 					case "Initialize the repo?":
@@ -65,7 +65,7 @@ func TestRootAction_Run(t *testing.T) {
 			assertions: func(t *testing.T, a *RootAction) {
 				t.Helper()
 
-				p := a.Prompter.(*uimock.PrompterMock)
+				p := a.Prompter.(*ui.PrompterMock)
 				assert.Equal(t, 2, len(p.ConfirmCalls()))
 				assert.Equal(t, true, a.GitClient.IsInitialized())
 			},
@@ -79,7 +79,7 @@ func TestRootAction_Run(t *testing.T) {
 				a.GhClient = NewClientMock()
 				a.GitClient = git.DefaultClient
 
-				p := a.Prompter.(*uimock.PrompterMock)
+				p := a.Prompter.(*ui.PrompterMock)
 				p.ConfirmFunc = func(msg string, value bool, help string) (bool, error) {
 					switch msg {
 					case "Initialize the repo?":
@@ -94,7 +94,7 @@ func TestRootAction_Run(t *testing.T) {
 			assertions: func(t *testing.T, a *RootAction) {
 				t.Helper()
 
-				p := a.Prompter.(*uimock.PrompterMock)
+				p := a.Prompter.(*ui.PrompterMock)
 				assert.Equal(t, 1, len(p.ConfirmCalls()))
 				assert.Equal(t, false, a.GitClient.IsInitialized())
 			},
@@ -121,7 +121,7 @@ func TestRootAction_Run(t *testing.T) {
 					return repo, nil
 				}
 
-				p := a.Prompter.(*uimock.PrompterMock)
+				p := a.Prompter.(*ui.PrompterMock)
 				p.ConfirmFunc = func(msg string, value bool, help string) (bool, error) {
 					switch msg {
 					case "Create a new repo on GitHub?":
@@ -170,7 +170,7 @@ func TestRootAction_Run(t *testing.T) {
 			assertions: func(t *testing.T, a *RootAction) {
 				t.Helper()
 
-				p := a.Prompter.(*uimock.PrompterMock)
+				p := a.Prompter.(*ui.PrompterMock)
 				assert.Equal(t, 3, len(p.ConfirmCalls()))
 				assert.Equal(t, 2, len(p.InputCalls()))
 				assert.Equal(t, 2, len(p.SelectCalls()))

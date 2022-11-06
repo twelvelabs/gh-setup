@@ -5,7 +5,6 @@ import (
 
 	"github.com/twelvelabs/termite/ioutil"
 	"github.com/twelvelabs/termite/ui"
-	uimock "github.com/twelvelabs/termite/ui/mock"
 
 	"github.com/twelvelabs/gh-setup/internal/gh"
 	"github.com/twelvelabs/gh-setup/internal/git"
@@ -46,7 +45,7 @@ func NewApp() (*App, error) {
 func NewTestApp() *App {
 	ios := ioutil.Test()
 	messenger := ui.NewMessenger(ios)
-	prompter := uimock.NewPrompterMock()
+	prompter := ui.NewPrompterMock()
 	ghClient := &gh.ClientMock{}
 	ghRestClient := &gh.RESTClientMock{}
 	gitClient := &git.ClientMock{}
