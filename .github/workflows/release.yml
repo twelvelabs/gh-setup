@@ -12,5 +12,5 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # pin@v2
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
       - uses: cli/gh-extension-precompile@ea409c0dc27ec3031d1b0d18d17124441d3c3b6b # pin@v1
