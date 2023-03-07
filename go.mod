@@ -3,7 +3,7 @@ module github.com/twelvelabs/gh-setup
 go 1.19
 
 require (
-	github.com/cli/go-gh v1.2.0
+	github.com/cli/go-gh v1.2.1
 	github.com/cli/safeexec v1.0.1
 	github.com/google/go-cmp v0.5.9
 	github.com/spf13/cobra v1.6.1
